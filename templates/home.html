@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Tools — Your Document Toolkit</title>
+    <meta name="description" content="A collection of powerful document tools: merge PDFs, convert images, and more.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>PDF Tools</h1>
+            <p>Your all-in-one document toolkit</p>
+        </header>
+
+        <!-- Tool Grid -->
+        <div class="tool-grid">
+            <a href="/merge" class="tool-card">
+                <div class="tool-icon merge-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z" />
+                        <path d="M15 3v4a2 2 0 0 0 2 2h4" />
+                    </svg>
+                </div>
+                <h3>Merge PDF</h3>
+                <p>Combine multiple PDFs, images, and Word files into one document</p>
+                <span class="tool-badge">Popular</span>
+            </a>
+
+            <div class="tool-card tool-card--coming-soon">
+                <div class="tool-icon split-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="9" rx="1" />
+                        <rect x="14" y="3" width="7" height="9" rx="1" />
+                        <rect x="3" y="15" width="7" height="6" rx="1" />
+                        <rect x="14" y="15" width="7" height="6" rx="1" />
+                    </svg>
+                </div>
+                <h3>Split PDF</h3>
+                <p>Extract specific pages or split a PDF into multiple files</p>
+                <span class="tool-badge tool-badge--soon">Coming Soon</span>
+            </div>
+
+            <div class="tool-card tool-card--coming-soon">
+                <div class="tool-icon compress-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3v18" />
+                        <path d="m8 8 4-4 4 4" />
+                        <path d="m8 16 4 4 4-4" />
+                    </svg>
+                </div>
+                <h3>Compress PDF</h3>
+                <p>Reduce file size while maintaining quality</p>
+                <span class="tool-badge tool-badge--soon">Coming Soon</span>
+            </div>
+
+            <div class="tool-card tool-card--coming-soon">
+                <div class="tool-icon lock-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                </div>
+                <h3>Protect PDF</h3>
+                <p>Add password protection to any PDF file</p>
+                <span class="tool-badge tool-badge--soon">Coming Soon</span>
+            </div>
+
+            <div class="tool-card tool-card--coming-soon">
+                <div class="tool-icon convert-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 12h16" />
+                        <path d="m15 7 5 5-5 5" />
+                    </svg>
+                </div>
+                <h3>Convert to PDF</h3>
+                <p>Convert images and Word documents to PDF format</p>
+                <span class="tool-badge tool-badge--soon">Coming Soon</span>
+            </div>
+
+            <div class="tool-card tool-card--coming-soon">
+                <div class="tool-icon watermark-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                </div>
+                <h3>Watermark</h3>
+                <p>Add text or image watermarks to your PDF pages</p>
+                <span class="tool-badge tool-badge--soon">Coming Soon</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>PDF Tools — Your all-in-one document toolkit</p>
+        </footer>
+    </div>
+</body>
+
+</html>

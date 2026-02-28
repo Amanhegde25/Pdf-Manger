@@ -14,6 +14,8 @@ from src.components.file_handler import handle_upload, handle_remove, handle_mer
 
 app = Flask(__name__)
 app.secret_key = 'pdf-merger-secret-key-change-in-production'
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
 
 config = AppConfig()
 os.makedirs(config.upload_folder, exist_ok=True)
@@ -29,8 +31,14 @@ def get_session_folder():
 
 
 @app.route('/')
-def index():
+def home():
     logger.info("Home page accessed")
+    return render_template('home.html')
+
+
+@app.route('/merge')
+def merge_page():
+    logger.info("Merge tool accessed")
     return render_template('index.html')
 
 
@@ -87,4 +95,4 @@ def clear_session():
 if __name__ == '__main__':
     logger.info("Starting PDF Merger Flask application")
     os.makedirs("logs", exist_ok=True)
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
