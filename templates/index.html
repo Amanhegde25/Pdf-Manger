@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Merger — Merge & Protect Your PDFs</title>
+    <meta name="description"
+        content="Upload PDFs and Word documents, reorder them, merge into one PDF, and optionally password-protect the output.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>📑 PDF Merger</h1>
+            <p>Upload, reorder, merge, and protect your documents</p>
+        </header>
+
+        <!-- Drop Zone -->
+        <div class="dropzone" id="dropzone">
+            <div class="dropzone-icon">📁</div>
+            <h3>Drop your files here</h3>
+            <p>Supports PDF, Word (.docx), JPG, and PNG files</p>
+            <button class="browse-btn" id="browseBtn" type="button">Browse Files</button>
+            <input type="file" id="fileInput" multiple accept=".pdf,.docx,.doc,.jpg,.jpeg,.png">
+        </div>
+
+        <!-- File List -->
+        <section class="file-list-section">
+            <div class="file-list-header">
+                <h2>Your Files</h2>
+                <div class="file-list-actions">
+                    <button class="clear-all-btn" id="clearAllBtn" type="button">Clear All</button>
+                    <span class="file-count" id="fileCount">0 files</span>
+                </div>
+            </div>
+            <div class="file-list" id="fileList"></div>
+        </section>
+
+        <!-- Options Panel -->
+        <div class="options-panel">
+            <div class="option-row">
+                <div class="option-label">
+                    <span class="icon">🔒</span>
+                    <span>Password Protect</span>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" id="passwordToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="password-field" id="passwordField">
+                <div class="password-input-wrapper">
+                    <input type="password" id="passwordInput" placeholder="Enter a password for the merged PDF">
+                    <button class="toggle-password" id="togglePasswordBtn" type="button">👁</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Merge Button -->
+        <div class="merge-section">
+            <button class="merge-btn" id="mergeBtn" disabled>
+                <span>🔗</span> Merge & Preview
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>PDF Merger — Upload, merge, and protect your documents</p>
+        </footer>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-container">
+            <div class="preview-header">
+                <h3 id="previewTitle">Preview</h3>
+                <div class="preview-actions">
+                    <button class="preview-download-btn" id="previewDownloadBtn" type="button" style="display:none;">
+                        ⬇ Download
+                    </button>
+                    <button class="preview-close-btn" id="previewCloseBtn" type="button">✕</button>
+                </div>
+            </div>
+            <div class="preview-body">
+                <iframe id="previewFrame" src="" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Processing...</div>
+    </div>
+
+    <!-- SortableJS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
