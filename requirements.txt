@@ -1,8 +1,5 @@
 flask
 PyPDF2
 python-docx
-docx2pdf
 Pillow
 gunicorn
-
--e .
