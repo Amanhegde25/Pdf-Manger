@@ -23,7 +23,10 @@ def convert_image_to_pdf(image_path: str, pdf_path: str):
 
 
 def convert_docx_to_pdf(docx_path: str, pdf_path: str):
-    """Convert a .docx file to PDF using docx2pdf."""
+    """Convert a .docx file to PDF. Requires Microsoft Word on Windows."""
+    import platform
+    if platform.system() != 'Windows':
+        raise Exception("Word-to-PDF conversion requires Microsoft Word (Windows only)")
     try:
         import pythoncom
         pythoncom.CoInitialize()
@@ -31,6 +34,8 @@ def convert_docx_to_pdf(docx_path: str, pdf_path: str):
         convert(docx_path, pdf_path)
         pythoncom.CoUninitialize()
         logger.info(f"Converted DOCX to PDF: {docx_path} -> {pdf_path}")
+    except ImportError:
+        raise Exception("docx2pdf is not installed")
     except Exception as e:
         logger.error(f"Failed to convert DOCX: {str(e)}")
         raise CustomException(e, sys)
