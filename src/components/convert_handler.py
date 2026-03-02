@@ -4,7 +4,6 @@ import uuid
 import io
 from flask import jsonify, send_file
 from werkzeug.utils import secure_filename
-from src.logger import logger
 from src.components.convert_operations import convert_files_to_pdf
 from src.components.pdf_operations import get_pdf_page_count
 from src.utils import allowed_file
@@ -26,7 +25,6 @@ def handle_convert_upload(request, folder, config):
     file_id = str(uuid.uuid4())
     saved_path = os.path.join(folder, f"{file_id}.{ext}")
     file.save(saved_path)
-    logger.info(f"Convert upload: {file.filename} ({ext})")
 
     # Convert immediately
     pdf_path = os.path.join(folder, f"{file_id}.pdf")

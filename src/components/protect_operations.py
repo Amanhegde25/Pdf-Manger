@@ -1,7 +1,6 @@
 import os
 import sys
 from PyPDF2 import PdfReader, PdfWriter
-from src.logger import logger
 from src.exception import CustomException
 
 
@@ -19,9 +18,7 @@ def protect_pdf(input_path: str, output_path: str, password: str):
         with open(output_path, 'wb') as f:
             writer.write(f)
 
-        logger.info(f"Protected PDF saved to {output_path}")
     except Exception as e:
-        logger.error(f"Failed to protect PDF: {str(e)}")
         raise CustomException(e, sys)
 
 
@@ -40,7 +37,5 @@ def remove_protection(input_path: str, output_path: str, password: str):
         with open(output_path, 'wb') as f:
             writer.write(f)
 
-        logger.info(f"Removed protection, saved to {output_path}")
     except Exception as e:
-        logger.error(f"Failed to remove PDF protection: {str(e)}")
         raise CustomException(e, sys)

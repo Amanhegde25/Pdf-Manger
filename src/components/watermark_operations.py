@@ -5,7 +5,6 @@ from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.colors import Color
-from src.logger import logger
 from src.exception import CustomException
 
 
@@ -55,7 +54,5 @@ def add_text_watermark(input_path: str, output_path: str, text: str,
         with open(output_path, 'wb') as f:
             writer.write(f)
 
-        logger.info(f"Added watermark '{text}' to PDF, saved to {output_path}")
     except Exception as e:
-        logger.error(f"Failed to add watermark: {str(e)}")
         raise CustomException(e, sys)

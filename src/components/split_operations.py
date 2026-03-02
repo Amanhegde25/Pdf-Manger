@@ -3,7 +3,6 @@ import sys
 import zipfile
 import io
 from PyPDF2 import PdfReader, PdfWriter
-from src.logger import logger
 from src.exception import CustomException
 
 
@@ -37,10 +36,8 @@ def split_pdf_all(input_path: str, output_dir: str) -> list:
             with open(out_path, 'wb') as f:
                 writer.write(f)
             outputs.append(out_path)
-        logger.info(f"Split PDF into {len(outputs)} pages")
         return outputs
     except Exception as e:
-        logger.error(f"Failed to split PDF: {str(e)}")
         raise CustomException(e, sys)
 
 
@@ -63,10 +60,8 @@ def split_pdf_ranges(input_path: str, output_dir: str, range_str: str) -> list:
         with open(out_path, 'wb') as f:
             writer.write(f)
         outputs.append(out_path)
-        logger.info(f"Extracted {len(pages)} pages from PDF")
         return outputs
     except Exception as e:
-        logger.error(f"Failed to split PDF by range: {str(e)}")
         raise CustomException(e, sys)
 
 

@@ -3,7 +3,6 @@ import sys
 import uuid
 from flask import jsonify, send_file
 from werkzeug.utils import secure_filename
-from src.logger import logger
 from src.components.split_operations import split_pdf_all, split_pdf_ranges, create_zip_from_files
 from src.components.pdf_operations import get_pdf_page_count
 from src.utils import allowed_file
@@ -26,7 +25,6 @@ def handle_split_upload(request, folder, config):
     file_id = str(uuid.uuid4())
     saved_path = os.path.join(folder, f"{file_id}.pdf")
     file.save(saved_path)
-    logger.info(f"Split upload: {file.filename}")
 
     page_count = get_pdf_page_count(saved_path)
 

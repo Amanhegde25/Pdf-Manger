@@ -4,7 +4,6 @@ import uuid
 import io
 from flask import Flask, render_template, request, jsonify, send_file, session
 from werkzeug.utils import secure_filename
-from src.logger import logger
 from src.utils import AppConfig, allowed_file
 from src.components.pdf_operations import (
     convert_docx_to_pdf, get_pdf_page_count, merge_pdfs,
@@ -38,14 +37,12 @@ def get_session_folder():
 # ===== Home =====
 @app.route('/')
 def home():
-    logger.info("Home page accessed")
     return render_template('home.html')
 
 
 # ===== Merge PDF =====
 @app.route('/merge')
 def merge_page():
-    logger.info("Merge tool accessed")
     return render_template('index.html')
 
 
@@ -108,7 +105,6 @@ def clear_session():
 # ===== Split PDF =====
 @app.route('/split')
 def split_page():
-    logger.info("Split tool accessed")
     return render_template('split.html')
 
 
@@ -139,7 +135,6 @@ def split_preview():
 # ===== Compress PDF =====
 @app.route('/compress')
 def compress_page():
-    logger.info("Compress tool accessed")
     return render_template('compress.html')
 
 
@@ -170,7 +165,6 @@ def compress_preview():
 # ===== Protect PDF =====
 @app.route('/protect')
 def protect_page():
-    logger.info("Protect tool accessed")
     return render_template('protect.html')
 
 
@@ -192,7 +186,6 @@ def protect_download():
 # ===== Convert to PDF =====
 @app.route('/convert')
 def convert_page():
-    logger.info("Convert tool accessed")
     return render_template('convert.html')
 
 
@@ -218,7 +211,6 @@ def convert_download(file_id):
 # ===== Watermark PDF =====
 @app.route('/watermark')
 def watermark_page():
-    logger.info("Watermark tool accessed")
     return render_template('watermark.html')
 
 
@@ -247,6 +239,4 @@ def watermark_preview():
 
 
 if __name__ == '__main__':
-    logger.info("Starting PDF Tools Flask application")
-    os.makedirs("logs", exist_ok=True)
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -1,7 +1,5 @@
 import os
 import sys
-from src.logger import logging
-from src.exception import CustomException
 from dataclasses import dataclass
 
 
@@ -16,11 +14,3 @@ class AppConfig:
 def allowed_file(filename: str, allowed_extensions: tuple) -> bool:
     """Check if a file has an allowed extension."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
-
-
-if __name__ == "__main__":
-    try:
-        config = AppConfig()
-        logging.info(f"App config created successfully. {config}")
-    except Exception as e:
-        raise CustomException(e, sys)

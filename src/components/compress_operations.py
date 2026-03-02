@@ -1,7 +1,6 @@
 import os
 import sys
 from PyPDF2 import PdfReader, PdfWriter
-from src.logger import logger
 from src.exception import CustomException
 
 
@@ -35,12 +34,10 @@ def compress_pdf(input_path: str, output_path: str, quality: str = 'medium'):
         compressed_size = os.path.getsize(output_path)
         reduction = round((1 - compressed_size / original_size) * 100, 1) if original_size > 0 else 0
 
-        logger.info(f"Compressed PDF: {original_size} -> {compressed_size} bytes ({reduction}% reduction)")
         return {
             'original_size': original_size,
             'compressed_size': compressed_size,
             'reduction_percent': reduction
         }
     except Exception as e:
-        logger.error(f"Failed to compress PDF: {str(e)}")
         raise CustomException(e, sys)

@@ -3,7 +3,6 @@ import sys
 import uuid
 import io
 from flask import jsonify, send_file
-from src.logger import logger
 from src.components.watermark_operations import add_text_watermark
 from src.components.pdf_operations import get_pdf_page_count
 
@@ -24,7 +23,6 @@ def handle_watermark_upload(request, folder, config):
     file_id = str(uuid.uuid4())
     saved_path = os.path.join(folder, f"{file_id}.pdf")
     file.save(saved_path)
-    logger.info(f"Watermark upload: {file.filename}")
 
     page_count = get_pdf_page_count(saved_path)
 

@@ -4,7 +4,6 @@ import uuid
 import io
 from flask import jsonify
 from werkzeug.utils import secure_filename
-from src.logger import logger
 from src.components.pdf_operations import (
     convert_docx_to_pdf, convert_image_to_pdf, get_pdf_page_count,
     merge_pdfs, encrypt_pdf, read_file_to_memory, cleanup_folder,
@@ -30,7 +29,6 @@ def handle_upload(request, folder, config):
 
     saved_path = os.path.join(folder, f"{file_id}.{ext}")
     file.save(saved_path)
-    logger.info(f"File uploaded: {file.filename} ({ext})")
 
     # Convert to PDF if needed
     pdf_path = saved_path
@@ -71,7 +69,6 @@ def handle_remove(request, folder):
     for f in os.listdir(folder):
         if f.startswith(file_id):
             os.remove(os.path.join(folder, f))
-            logger.info(f"File removed: {f}")
 
     return jsonify({'success': True})
 
