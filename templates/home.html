@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Tools — Your Document Toolkit</title>
-    <meta name="description" content="A collection of powerful document tools: merge PDFs, convert images, and more.">
+    <meta name="description"
+        content="A collection of powerful document tools: merge PDFs, split, compress, protect, convert, and watermark.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -33,7 +34,7 @@
                 <span class="tool-badge">Popular</span>
             </a>
 
-            <div class="tool-card tool-card--coming-soon">
+            <a href="/split" class="tool-card">
                 <div class="tool-icon split-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -45,10 +46,10 @@
                 </div>
                 <h3>Split PDF</h3>
                 <p>Extract specific pages or split a PDF into multiple files</p>
-                <span class="tool-badge tool-badge--soon">Coming Soon</span>
-            </div>
+                <span class="tool-badge">New</span>
+            </a>
 
-            <div class="tool-card tool-card--coming-soon">
+            <a href="/compress" class="tool-card">
                 <div class="tool-icon compress-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -59,10 +60,10 @@
                 </div>
                 <h3>Compress PDF</h3>
                 <p>Reduce file size while maintaining quality</p>
-                <span class="tool-badge tool-badge--soon">Coming Soon</span>
-            </div>
+                <span class="tool-badge">New</span>
+            </a>
 
-            <div class="tool-card tool-card--coming-soon">
+            <a href="/protect" class="tool-card">
                 <div class="tool-icon lock-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -72,10 +73,10 @@
                 </div>
                 <h3>Protect PDF</h3>
                 <p>Add password protection to any PDF file</p>
-                <span class="tool-badge tool-badge--soon">Coming Soon</span>
-            </div>
+                <span class="tool-badge">New</span>
+            </a>
 
-            <div class="tool-card tool-card--coming-soon">
+            <a href="/convert" class="tool-card">
                 <div class="tool-icon convert-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -85,10 +86,10 @@
                 </div>
                 <h3>Convert to PDF</h3>
                 <p>Convert images and Word documents to PDF format</p>
-                <span class="tool-badge tool-badge--soon">Coming Soon</span>
-            </div>
+                <span class="tool-badge">New</span>
+            </a>
 
-            <div class="tool-card tool-card--coming-soon">
+            <a href="/watermark" class="tool-card">
                 <div class="tool-icon watermark-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -97,8 +98,8 @@
                 </div>
                 <h3>Watermark</h3>
                 <p>Add text or image watermarks to your PDF pages</p>
-                <span class="tool-badge tool-badge--soon">Coming Soon</span>
-            </div>
+                <span class="tool-badge">New</span>
+            </a>
         </div>
 
         <!-- Footer -->

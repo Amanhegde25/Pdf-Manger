@@ -4,57 +4,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merge PDF — PDF Tools</title>
-    <meta name="description" content="Upload PDFs and Word documents, reorder them, and merge into one PDF.">
+    <title>Convert to PDF — PDF Tools</title>
+    <meta name="description" content="Convert images and Word documents to PDF format.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
     <div class="container">
-        <!-- Header -->
         <header class="header">
             <a href="/" class="back-link">&larr; All Tools</a>
-            <h1>Merge PDF</h1>
-            <p>Upload, reorder, and merge your documents</p>
+            <h1>Convert to PDF</h1>
+            <p>Convert images and Word documents to PDF format</p>
         </header>
 
         <!-- Drop Zone -->
         <div class="dropzone" id="dropzone">
-            <div class="dropzone-icon">📁</div>
+            <div class="dropzone-icon">🔄</div>
             <h3>Drop your files here</h3>
-            <p>Supports PDF, Word (.docx), JPG, and PNG files</p>
+            <p>Supports JPG, PNG, and Word (.docx) files</p>
             <button class="browse-btn" id="browseBtn" type="button">Browse Files</button>
-            <input type="file" id="fileInput" multiple accept=".pdf,.docx,.doc,.jpg,.jpeg,.png">
+            <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.docx,.doc">
         </div>
 
-        <!-- File List -->
-        <section class="file-list-section">
-            <div class="file-list-header">
-                <h2>Your Files</h2>
-                <div class="file-list-actions">
-                    <button class="clear-all-btn" id="clearAllBtn" type="button">Clear All</button>
-                    <span class="file-count" id="fileCount">0 files</span>
+        <!-- File Info -->
+        <div class="file-info-card" id="fileInfoCard" style="display:none;">
+            <div class="file-card">
+                <div class="file-icon pdf">📄</div>
+                <div class="file-info">
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-meta" id="fileMeta"></div>
                 </div>
+                <button class="file-remove" id="removeFileBtn" title="Remove">✕</button>
             </div>
-            <div class="file-list" id="fileList"></div>
-        </section>
-
-        <!-- Merge Button -->
-        <div class="merge-section" id="mergeSection" style="display:none;">
-            <button class="merge-btn" id="mergeBtn" disabled>
-                <span>🔗</span> Merge PDF
-            </button>
         </div>
 
         <!-- Result -->
         <div class="result-card" id="resultCard" style="display:none;">
             <div class="result-info">
                 <span class="result-icon">✅</span>
-                <span id="resultText">PDF merged successfully!</span>
+                <span id="resultText">Converted successfully!</span>
             </div>
             <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
-                <button class="preview-action-btn" id="previewMergedBtn">
+                <button class="preview-action-btn" id="previewBtn">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -62,15 +54,14 @@
                     </svg>
                     Preview
                 </button>
-                <button class="merge-btn" id="downloadMergedBtn" style="padding:12px 32px;">
+                <button class="merge-btn" id="downloadBtn" style="padding:12px 32px;">
                     <span>⬇</span> Download
                 </button>
             </div>
         </div>
 
-        <!-- Footer -->
         <footer class="footer">
-            <p>PDF Tools — Merge your documents into one</p>
+            <p>PDF Tools — Convert your files to PDF</p>
         </footer>
     </div>
 
@@ -92,12 +83,10 @@
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
-        <div class="loading-text" id="loadingText">Processing...</div>
+        <div class="loading-text" id="loadingText">Converting...</div>
     </div>
 
-    <!-- SortableJS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='convert.js') }}"></script>
 </body>
 
 </html>

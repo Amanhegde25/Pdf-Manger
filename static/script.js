@@ -9,21 +9,27 @@ const browseBtn = document.getElementById('browseBtn');
 const fileList = document.getElementById('fileList');
 const fileCount = document.getElementById('fileCount');
 const mergeBtn = document.getElementById('mergeBtn');
-const passwordToggle = document.getElementById('passwordToggle');
-const passwordField = document.getElementById('passwordField');
-const passwordInput = document.getElementById('passwordInput');
-const togglePasswordBtn = document.getElementById('togglePasswordBtn');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const loadingText = document.getElementById('loadingText');
+const resultCard = document.getElementById('resultCard');
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', () => {
     initDropzone();
     initSortable();
-    initToggle();
-    initPasswordToggle();
     initMerge();
     initClearAll();
+
+    document.getElementById('previewCloseBtn').addEventListener('click', closePreview);
+    document.getElementById('previewModal').addEventListener('click', (e) => {
+        if (e.target.id === 'previewModal') closePreview();
+    });
+    document.getElementById('previewMergedBtn').addEventListener('click', () => {
+        openPreview('/merge/preview', 'Merged PDF');
+    });
+    document.getElementById('downloadMergedBtn').addEventListener('click', () => {
+        window.location.href = '/download-merged';
+    });
 });
 
 // ===== Dropzone =====
@@ -114,6 +120,7 @@ function renderFileList() {
     fileList.innerHTML = '';
     fileCount.textContent = uploadedFiles.length + ' file' + (uploadedFiles.length !== 1 ? 's' : '');
     mergeBtn.disabled = uploadedFiles.length < 1;
+    document.getElementById('mergeSection').style.display = uploadedFiles.length > 0 ? '' : 'none';
 
     uploadedFiles.forEach((file, index) => {
         const card = document.createElement('div');
@@ -131,7 +138,7 @@ function renderFileList() {
                 <div class="file-name" title="${file.name}">${file.name}</div>
                 <div class="file-meta">${pageText}</div>
             </div>
-            <button class="file-preview" onclick="previewFile('${file.id}', '${file.name}')" title="Preview">👁</button>
+            <button class="file-preview" onclick="previewFile('${file.id}', '${file.name}')" title="Preview"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
             <button class="file-remove" onclick="removeFile('${file.id}')" title="Remove">✕</button>
         `;
         fileList.appendChild(card);
@@ -153,7 +160,6 @@ function initSortable() {
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
             onEnd: () => {
-                // Reorder uploadedFiles based on DOM order
                 const newOrder = [];
                 fileList.querySelectorAll('.file-card').forEach(card => {
                     const file = uploadedFiles.find(f => f.id === card.dataset.id);
@@ -180,43 +186,12 @@ async function removeFile(fileId) {
     renderFileList();
 }
 
-// ===== Toggle =====
-function initToggle() {
-    passwordToggle.addEventListener('change', () => {
-        if (passwordToggle.checked) {
-            passwordField.classList.add('visible');
-            passwordInput.focus();
-        } else {
-            passwordField.classList.remove('visible');
-            passwordInput.value = '';
-        }
-    });
-}
-
-// ===== Password Visibility =====
-function initPasswordToggle() {
-    togglePasswordBtn.addEventListener('click', () => {
-        const type = passwordInput.type === 'password' ? 'text' : 'password';
-        passwordInput.type = type;
-        togglePasswordBtn.textContent = type === 'password' ? '👁' : '🙈';
-    });
-}
-
 // ===== Merge =====
 function initMerge() {
     mergeBtn.addEventListener('click', async () => {
         const realFiles = uploadedFiles.filter(f => !f.uploading);
         if (realFiles.length === 0) {
             showToast('Please upload at least one file.', 'error');
-            return;
-        }
-
-        const protect = passwordToggle.checked;
-        const password = passwordInput.value;
-
-        if (protect && !password) {
-            showToast('Please enter a password.', 'error');
-            passwordInput.focus();
             return;
         }
 
@@ -227,8 +202,8 @@ function initMerge() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     files: realFiles.map(f => f.id),
-                    protect: protect,
-                    password: password
+                    protect: false,
+                    password: ''
                 })
             });
 
@@ -238,15 +213,14 @@ function initMerge() {
             }
 
             hideLoading();
-            showToast('PDF merged! Opening preview...', 'success');
 
-            // Show preview with download option
-            if (data.protected) {
-                // Can't preview encrypted PDFs — go straight to download
-                downloadMerged();
-            } else {
-                openPreview(`/preview/${data.preview_id}`, 'Merged PDF — Preview', true);
-            }
+            // Show result card
+            document.getElementById('resultText').textContent =
+                `${realFiles.length} file${realFiles.length > 1 ? 's' : ''} merged successfully!`;
+            document.getElementById('mergeSection').style.display = 'none';
+            resultCard.style.display = 'block';
+
+            showToast('PDF merged successfully!', 'success');
         } catch (err) {
             showToast(err.message, 'error');
             hideLoading();
@@ -266,22 +240,13 @@ function hideLoading() {
 
 // ===== Toast =====
 function showToast(message, type = 'success') {
-    // Remove any existing toasts
     document.querySelectorAll('.toast').forEach(t => t.remove());
-
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.textContent = message;
     document.body.appendChild(toast);
-
-    requestAnimationFrame(() => {
-        toast.classList.add('show');
-    });
-
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3500);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3500);
 }
 
 // ===== Clear All =====
@@ -297,6 +262,8 @@ function initClearAll() {
             // ignore
         }
         uploadedFiles = [];
+        resultCard.style.display = 'none';
+        document.getElementById('mergeSection').style.display = 'none';
         renderFileList();
         showToast('All files cleared.', 'success');
     });
@@ -304,18 +271,16 @@ function initClearAll() {
 
 // ===== Preview =====
 function previewFile(fileId, fileName) {
-    openPreview(`/preview/${fileId}`, fileName, false);
+    openPreview(`/preview/${fileId}`, fileName);
 }
 
-function openPreview(url, title, showDownload) {
+function openPreview(url, title) {
     const modal = document.getElementById('previewModal');
     const frame = document.getElementById('previewFrame');
     const titleEl = document.getElementById('previewTitle');
-    const downloadBtn = document.getElementById('previewDownloadBtn');
 
     titleEl.textContent = title;
     frame.src = url;
-    downloadBtn.style.display = showDownload ? 'inline-flex' : 'none';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -327,27 +292,3 @@ function closePreview() {
     modal.classList.remove('active');
     document.body.style.overflow = '';
 }
-
-function downloadMerged() {
-    const a = document.createElement('a');
-    a.href = '/download-merged';
-    a.download = 'merged.pdf';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    showToast('Download started!', 'success');
-
-    // Server wipes all files after download, so clear client state
-    closePreview();
-    uploadedFiles = [];
-    renderFileList();
-}
-
-// Init preview modal close
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('previewCloseBtn').addEventListener('click', closePreview);
-    document.getElementById('previewDownloadBtn').addEventListener('click', downloadMerged);
-    document.getElementById('previewModal').addEventListener('click', (e) => {
-        if (e.target.id === 'previewModal') closePreview();
-    });
-});
