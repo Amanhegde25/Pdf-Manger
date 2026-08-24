@@ -185,6 +185,11 @@ body::before {
     color: #3a9cf5;
 }
 
+.tool-icon.editor-icon {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+
 .tool-card h3 {
     font-size: 1rem;
     font-weight: 700;

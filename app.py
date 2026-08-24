@@ -15,6 +15,7 @@ from src.components.compress_handler import handle_compress_upload, handle_compr
 from src.components.protect_handler import handle_protect_upload, handle_protect, handle_protect_download
 from src.components.convert_handler import handle_convert_upload, handle_convert_download
 from src.components.watermark_handler import handle_watermark_upload, handle_watermark, handle_watermark_download
+from src.components.editor_handler import handle_editor_upload, handle_editor_add_pages, handle_editor_save, handle_editor_download
 
 app = Flask(__name__)
 app.secret_key = 'pdf-merger-secret-key-change-in-production'
@@ -236,6 +237,41 @@ def watermark_preview():
     if os.path.exists(path):
         return send_file(path, mimetype='application/pdf')
     return jsonify({'error': 'No watermarked file found'}), 404
+
+
+# ===== PDF Editor =====
+@app.route('/editor')
+def editor_page():
+    return render_template('editor.html')
+
+
+@app.route('/editor/upload', methods=['POST'])
+def editor_upload():
+    return handle_editor_upload(request, get_session_folder(), config)
+
+
+@app.route('/editor/add-pages', methods=['POST'])
+def editor_add_pages():
+    return handle_editor_add_pages(request, get_session_folder(), config)
+
+
+@app.route('/editor/save', methods=['POST'])
+def editor_save():
+    return handle_editor_save(request, get_session_folder())
+
+
+@app.route('/editor/download')
+def editor_download():
+    return handle_editor_download(get_session_folder())
+
+
+@app.route('/editor/preview/<file_id>')
+def editor_preview(file_id):
+    folder = get_session_folder()
+    pdf_file = os.path.join(folder, f"{file_id}.pdf")
+    if os.path.exists(pdf_file):
+        return send_file(pdf_file, mimetype='application/pdf')
+    return jsonify({'error': 'File not found'}), 404
 
 
 if __name__ == '__main__':
