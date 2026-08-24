@@ -30,6 +30,8 @@ const state = {
     shapeStartX: 0,
     shapeStartY: 0,
     activeShapeObj: null,
+    extractedText: [],
+    textOverlays: [],
 };
 
 // ─── DOM References ─────────────────────────────────────────────
@@ -86,6 +88,8 @@ const els = {
     propsShapeStroke: $('propsShapeStroke'),
     propsShapeStrokeWidth: $('propsShapeStrokeWidth'),
     propsShapeOpacity: $('propsShapeOpacity'),
+    propsMaskColor: $('propsMaskColor'),
+    maskColorRow: $('maskColorRow'),
     // Property panels
     propsText: $('propsText'),
     propsDraw: $('propsDraw'),
@@ -122,9 +126,18 @@ function initFabricCanvas(w, h) {
         preserveObjectStacking: true,
     });
 
-    state.fabricCanvas.on('object:added', () => saveHistory());
-    state.fabricCanvas.on('object:modified', () => saveHistory());
-    state.fabricCanvas.on('object:removed', () => saveHistory());
+    state.fabricCanvas.on('object:added', (e) => {
+        if (e.target && e.target.isTextOverlay) return;
+        saveHistory();
+    });
+    state.fabricCanvas.on('object:modified', (e) => {
+        if (e.target && e.target.isTextOverlay) return;
+        saveHistory();
+    });
+    state.fabricCanvas.on('object:removed', (e) => {
+        if (e.target && e.target.isTextOverlay) return;
+        saveHistory();
+    });
 
     state.fabricCanvas.on('selection:created', onObjectSelected);
     state.fabricCanvas.on('selection:updated', onObjectSelected);
@@ -142,11 +155,47 @@ async function loadPDF(fileBytes, appendMode = false) {
 
     const bytes = new Uint8Array(fileBytes);
     const loadingTask = pdfjsLib.getDocument({ data: bytes.slice() });
-    const pdfDoc = await loadingTask.promise;
+    
+    let resolvedPassword = null;
+    loadingTask.onPassword = function(updatePassword, reason) {
+        if (reason === pdfjsLib.PasswordResponses.NEED_PASSWORD) {
+            const pwd = prompt('This PDF is password protected. Enter password:');
+            if (pwd) {
+                resolvedPassword = pwd;
+                updatePassword(pwd);
+            } else {
+                hideLoading();
+                showToast('Password required to open PDF', 'error');
+            }
+        } else if (reason === pdfjsLib.PasswordResponses.INCORRECT_PASSWORD) {
+            const pwd = prompt('Incorrect password. Try again:');
+            if (pwd) {
+                resolvedPassword = pwd;
+                updatePassword(pwd);
+            } else {
+                hideLoading();
+                showToast('Password required to open PDF', 'error');
+            }
+        }
+    };
+    
+    let pdfDoc;
+    try {
+        pdfDoc = await loadingTask.promise;
+    } catch (err) {
+        hideLoading();
+        if (err.name === 'PasswordException') {
+            showToast('Failed to open protected PDF', 'error');
+        } else {
+            showToast('Failed to load PDF', 'error');
+            console.error(err);
+        }
+        return;
+    }
 
     // Store as a source file for pdf-lib export
     const sourceIndex = state.sourceFiles.length;
-    state.sourceFiles.push({ bytes: bytes });
+    state.sourceFiles.push({ bytes: bytes, password: resolvedPassword });
 
     if (!appendMode) {
         state.pdfDoc = pdfDoc;
@@ -211,6 +260,39 @@ async function renderCurrentPage() {
 
     await page.render({ canvasContext: ctx, viewport }).promise;
 
+    // Extract text for true text editing using the logical viewport (unscaled for retina)
+    const logicalViewport = page.getViewport({ scale: state.zoom });
+    const textContent = await page.getTextContent();
+    state.extractedText = textContent.items.map(item => {
+        const tx = pdfjsLib.Util.transform(logicalViewport.transform, item.transform);
+        const fontSize = Math.sqrt(tx[2] * tx[2] + tx[3] * tx[3]);
+        
+        let fontFam = 'Arial';
+        let weight = 'normal';
+        let style = 'normal';
+        if (item.fontName) {
+            const lowerName = item.fontName.toLowerCase();
+            if (lowerName.includes('bold')) weight = 'bold';
+            if (lowerName.includes('italic') || lowerName.includes('oblique')) style = 'italic';
+            if (lowerName.includes('times')) fontFam = 'Times New Roman';
+            else if (lowerName.includes('courier')) fontFam = 'Courier New';
+            else if (lowerName.includes('helvetica')) fontFam = 'Helvetica';
+            else if (lowerName.includes('georgia')) fontFam = 'Georgia';
+        }
+
+        return {
+            text: item.str,
+            left: tx[4],
+            top: tx[5] - (fontSize * 0.8), // Adjust from baseline to top
+            width: item.width * state.zoom,
+            height: fontSize * 1.2,
+            fontSize: fontSize,
+            fontFamily: fontFam,
+            fontWeight: weight,
+            fontStyle: style
+        };
+    }).filter(t => t.text.trim().length > 0);
+
     // Size the fabric canvas to match the display size
     const displayW = viewport.width / 1.5;
     const displayH = viewport.height / 1.5;
@@ -262,7 +344,9 @@ function saveCurrentAnnotations() {
     if (!state.fabricCanvas) return;
     const globalIdx = getGlobalPageIndex(state.currentPage);
     if (globalIdx >= 0) {
-        state.annotations.set(globalIdx, state.fabricCanvas.toJSON());
+        const json = state.fabricCanvas.toJSON(['isTextOverlay']);
+        json.objects = json.objects.filter(obj => !obj.isTextOverlay);
+        state.annotations.set(globalIdx, json);
     }
 }
 
@@ -286,7 +370,9 @@ function saveHistory() {
     }
 
     const h = state.history.get(globalIdx);
-    const json = JSON.stringify(state.fabricCanvas.toJSON());
+    const rawJson = state.fabricCanvas.toJSON(['isTextOverlay']);
+    rawJson.objects = rawJson.objects.filter(obj => !obj.isTextOverlay);
+    const json = JSON.stringify(rawJson);
 
     // If we're not at the end, truncate forward history
     if (h.pointer < h.states.length - 1) {
@@ -492,7 +578,14 @@ function setTool(tool) {
     }
 
     // Show relevant properties panel
-    els.propsText.style.display = tool === 'text' ? 'block' : 'none';
+    if (tool === 'text' || tool === 'editText') {
+        els.propsText.style.display = 'block';
+        els.maskColorRow.style.display = tool === 'editText' ? 'flex' : 'none';
+    } else {
+        els.propsText.style.display = 'none';
+        els.maskColorRow.style.display = 'none';
+    }
+    
     els.propsDraw.style.display = tool === 'draw' ? 'block' : 'none';
     els.propsHighlight.style.display = tool === 'highlight' ? 'block' : 'none';
     els.propsShape.style.display = tool === 'shape' ? 'block' : 'none';
@@ -513,9 +606,18 @@ function applyToolMode() {
 
     // Disable object interactivity for draw modes
     fc.forEachObject(o => {
-        o.selectable = state.currentTool === 'select';
-        o.evented = state.currentTool === 'select';
+        if (!o.isTextOverlay) {
+            o.selectable = state.currentTool === 'select';
+            o.evented = state.currentTool === 'select';
+        }
     });
+    
+    // Handle Edit Text Overlays
+    if (state.currentTool === 'editText') {
+        renderTextOverlays();
+    } else {
+        removeTextOverlays();
+    }
 
     switch (state.currentTool) {
         case 'select':
@@ -523,6 +625,7 @@ function applyToolMode() {
             break;
 
         case 'text':
+        case 'editText':
             fc.selection = false;
             fc.defaultCursor = 'text';
             fc.hoverCursor = 'text';
@@ -561,6 +664,38 @@ function applyToolMode() {
 function onCanvasMouseDown(opt) {
     if (!state.fabricCanvas) return;
     const pointer = state.fabricCanvas.getPointer(opt.e);
+
+    // If clicking an edit text overlay
+    if (state.currentTool === 'editText' && opt.target && opt.target.isTextOverlay) {
+        const target = opt.target;
+        const textData = target.textData;
+        
+        // Remove the overlay
+        state.fabricCanvas.remove(target);
+        state.textOverlays = state.textOverlays.filter(o => o !== target);
+        state.extractedText = state.extractedText.filter(t => t !== textData);
+        
+        // Add masking rectangle
+        const mask = new fabric.Rect({
+            left: target.left,
+            top: target.top,
+            width: target.width,
+            height: target.height,
+            fill: els.propsMaskColor.value,
+            stroke: 'transparent',
+            selectable: true,
+            evented: true,
+        });
+        state.fabricCanvas.add(mask);
+        
+        // Add text on top
+        addTextAtPosition(target.left, target.top, textData.text, textData.fontSize, {
+            fontFamily: textData.fontFamily,
+            fontWeight: textData.fontWeight,
+            fontStyle: textData.fontStyle,
+        });
+        return;
+    }
 
     if (state.currentTool === 'text') {
         addTextAtPosition(pointer.x, pointer.y);
@@ -699,16 +834,53 @@ function addArrowHead(line) {
     state.fabricCanvas.add(triangle);
 }
 
+// ─── Edit Text Overlays ─────────────────────────────────────────
+function renderTextOverlays() {
+    removeTextOverlays(); // ensure clean state
+    if (!state.fabricCanvas) return;
+
+    state.extractedText.forEach(textData => {
+        const overlay = new fabric.Rect({
+            left: textData.left,
+            top: textData.top,
+            width: textData.width,
+            height: textData.height,
+            fill: 'rgba(58, 156, 245, 0.2)',
+            stroke: '#3a9cf5',
+            strokeWidth: 1,
+            selectable: false,
+            evented: true,
+            hoverCursor: 'pointer',
+        });
+        // Attach custom property
+        overlay.isTextOverlay = true;
+        overlay.textData = textData;
+
+        state.fabricCanvas.add(overlay);
+        state.textOverlays.push(overlay);
+    });
+    state.fabricCanvas.renderAll();
+}
+
+function removeTextOverlays() {
+    if (!state.fabricCanvas) return;
+    state.textOverlays.forEach(overlay => {
+        state.fabricCanvas.remove(overlay);
+    });
+    state.textOverlays = [];
+    state.fabricCanvas.renderAll();
+}
+
 // ─── Text Tool ──────────────────────────────────────────────────
-function addTextAtPosition(x, y) {
-    const textbox = new fabric.IText('Type here', {
+function addTextAtPosition(x, y, initialText = 'Type here', initialSize = null, options = {}) {
+    const textbox = new fabric.IText(initialText, {
         left: x,
         top: y,
-        fontSize: parseInt(els.propsFontSize.value),
-        fill: els.propsTextColor.value,
-        fontFamily: els.propsFontFamily.value,
-        fontWeight: els.propsBold.classList.contains('active') ? 'bold' : 'normal',
-        fontStyle: els.propsItalic.classList.contains('active') ? 'italic' : 'normal',
+        fontSize: initialSize || parseInt(els.propsFontSize.value),
+        fill: options.fill || els.propsTextColor.value,
+        fontFamily: options.fontFamily || els.propsFontFamily.value,
+        fontWeight: options.fontWeight || (els.propsBold.classList.contains('active') ? 'bold' : 'normal'),
+        fontStyle: options.fontStyle || (els.propsItalic.classList.contains('active') ? 'italic' : 'normal'),
         editable: true,
         selectable: true,
         evented: true,
@@ -883,8 +1055,12 @@ async function exportPDF() {
 
         for (let i = 0; i < activePages.length; i++) {
             const pageData = activePages[i];
-            const sourceBytes = state.sourceFiles[pageData.sourceFileIndex].bytes;
-            const sourcePdf = await PDFDocument.load(sourceBytes);
+            const sourceFile = state.sourceFiles[pageData.sourceFileIndex];
+            const sourceBytes = sourceFile.bytes;
+            const sourcePdf = await PDFDocument.load(sourceBytes, {
+                password: sourceFile.password,
+                ignoreEncryption: true
+            });
             const [copiedPage] = await outputPdf.copyPages(sourcePdf, [pageData.pageIndex]);
             const addedPage = outputPdf.addPage(copiedPage);
 
